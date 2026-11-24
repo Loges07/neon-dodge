@@ -4,15 +4,61 @@ A neon arcade reaction game built with HTML, CSS, and JavaScript.
 
 Survive the grid. Graze the danger. Chase the multiplier.
 
-## Play
+## Play on your computer
 
-No build step and no dependencies. Open `index.html` in a browser, or serve the folder:
+The game is a set of files that runs in your web browser. There is nothing to install and no build step.
+
+### Option 1: Download a ZIP (no Git needed)
+
+1. On the repository page on GitHub, click the green **Code** button, then **Download ZIP**.
+2. Unzip the file.
+3. Double-click `index.html` in the unzipped folder. It opens in your browser, ready to play.
+
+### Option 2: Use Git
+
+Download the repository:
+
+```bash
+git clone https://github.com/Loges07/neon-dodge.git
+```
+
+Go into the folder:
+
+```bash
+cd neon-dodge
+```
+
+Open the game on macOS:
+
+```bash
+open index.html
+```
+
+Or on Windows:
+
+```bash
+start index.html
+```
+
+On Linux, run `xdg-open index.html`. Double-clicking `index.html` in your file browser also works.
+
+### Option 3: Run a local web server (optional)
 
 ```bash
 python3 -m http.server 8000
 ```
 
-Then visit <http://localhost:8000>. It also works as-is on GitHub Pages.
+Then visit <http://localhost:8000>. The game also works as-is on GitHub Pages.
+
+The game loads the Orbitron font from Google Fonts. Without an internet connection it falls back to a system font and plays the same.
+
+### Quick start
+
+1. Click **PLAY**, or press Space or Enter.
+2. Move with the mouse, WASD or the arrow keys.
+3. Dash with a click, Space or Shift. You are briefly untouchable while dashing.
+4. Pass close to hazards without touching them to build your multiplier, and grab the glowing pickups.
+5. Press P or Esc to pause, and M to turn the music on or off.
 
 ## Controls
 
