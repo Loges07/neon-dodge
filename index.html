@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Neon Dodge</title>
+  <meta name="description" content="A neon arcade reaction game. Dodge lasers, seekers and shock rings, graze danger to build your multiplier, and survive as long as you can.">
+  <meta name="theme-color" content="#05010f">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2305010f'/%3E%3Crect x='10' y='10' width='18' height='18' fill='none' stroke='%23ff2bd6' stroke-width='4' transform='rotate(20 19 19)'/%3E%3Ccircle cx='40' cy='40' r='10' fill='%233ff8ff'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <canvas id="game" aria-label="Neon Dodge play field"></canvas>
+
+  <!-- In-game HUD -->
+  <div id="hud" class="hidden" aria-hidden="true">
+    <div class="hud-block hud-left">
+      <div class="hud-label">SCORE</div>
+      <div id="score" class="hud-value">0</div>
+    </div>
+    <div class="hud-block hud-center">
+      <div id="level" class="hud-level">LEVEL 1</div>
+      <div id="mult" class="hud-mult">x1</div>
+      <div class="chain"><div id="chain-fill"></div></div>
+    </div>
+    <div class="hud-block hud-right">
+      <div class="hud-label">BEST</div>
+      <div id="hud-best" class="hud-value small">0</div>
+    </div>
+    <div class="hud-bottom">
+      <div id="powerups"></div>
+      <div id="dash-meter" class="dash-meter"><div id="dash-fill"></div><span>DASH</span></div>
+    </div>
+  </div>
+
+  <button id="pause-btn" class="icon-btn" aria-label="Pause">
+    <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><rect x="5" y="4" width="4.5" height="16" rx="1"/><rect x="14.5" y="4" width="4.5" height="16" rx="1"/></svg>
+  </button>
+  <button id="touch-dash" aria-label="Dash">DASH</button>
+
+  <div id="banner" aria-live="polite">
+    <div id="banner-title"></div>
+    <div id="banner-sub"></div>
+  </div>
+
+  <!-- Main menu -->
+  <section id="menu" class="overlay">
+    <div class="panel">
+      <h1 class="title"><span class="t-neon">NEON</span><span class="t-dodge">DODGE</span></h1>
+      <p class="tagline">Survive the grid. Graze the danger. Chase the multiplier.</p>
+      <button id="play-btn" class="btn primary" autofocus>PLAY</button>
+      <div class="best-line">BEST <span id="menu-best">0</span></div>
+
+      <div class="cards">
+        <div class="card">
+          <h2>Controls</h2>
+          <ul class="controls">
+            <li class="kb"><span class="keys">Mouse · WASD · Arrows</span><span>Move</span></li>
+            <li class="kb"><span class="keys">Click · Space · Shift</span><span>Dash (brief invincibility)</span></li>
+            <li class="kb"><span class="keys">P · Esc</span><span>Pause</span></li>
+            <li class="tc"><span class="keys">Drag anywhere</span><span>Move (relative, like a trackpad)</span></li>
+            <li class="tc"><span class="keys">DASH button · Double-tap · 2nd finger</span><span>Dash (brief invincibility)</span></li>
+            <li class="tc"><span class="keys">Pause button</span><span>Pause</span></li>
+          </ul>
+        </div>
+        <div class="card">
+          <h2>Scoring</h2>
+          <p>Points tick up every second you survive. Pass <em>close</em> to hazards to <strong>graze</strong> them — every 3 grazes in a row raises your multiplier (up to x10). Play it safe too long and the chain decays.</p>
+        </div>
+        <div class="card">
+          <h2>Hazards</h2>
+          <ul class="legend">
+            <li><svg viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" transform="rotate(20 12 12)" class="s-mag"/></svg><span><b>Drifter</b> flies straight across</span></li>
+            <li><svg viewBox="0 0 24 24"><path d="M20 12 L6 19 L9 12 L6 5 Z" class="s-red"/></svg><span><b>Seeker</b> homes in on you</span></li>
+            <li><svg viewBox="0 0 24 24"><line x1="2" y1="12" x2="22" y2="12" class="s-mag" stroke-dasharray="3 2"/></svg><span><b>Laser</b> warns, then fires</span></li>
+            <li><svg viewBox="0 0 24 24"><path d="M12 4 L19 8 L19 16 L12 20 L5 16 L5 8 Z" class="s-org"/></svg><span><b>Bouncer</b> ricochets 3 times</span></li>
+            <li><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="7" class="s-yel"/><circle cx="12" cy="12" r="2.5" class="f-yel"/></svg><span><b>Burster</b> explodes into shrapnel</span></li>
+            <li><svg viewBox="0 0 24 24"><path d="M17.5 5.5 A9 9 0 1 0 19.5 9" class="s-pur"/></svg><span><b>Shock ring</b> — slip through the gap</span></li>
+          </ul>
+        </div>
+        <div class="card">
+          <h2>Pickups</h2>
+          <ul class="legend">
+            <li><svg viewBox="0 0 24 24"><path d="M12 5 L19 12 L12 19 L5 12 Z" class="s-lim"/></svg><span><b>Shard</b> bonus points</span></li>
+            <li><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" class="s-cya"/><path d="M12 7 L16 9 L15 14 L12 17 L9 14 L8 9 Z" class="s-cya"/></svg><span><b>Shield</b> absorbs one hit</span></li>
+            <li><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" class="s-pur"/><path d="M8 7 L16 7 L8 17 L16 17 Z" class="s-pur"/></svg><span><b>Slow-mo</b> slows every hazard</span></li>
+            <li><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" class="s-yel"/><path d="M12 6 V9 M12 15 V18 M6 12 H9 M15 12 H18 M8 8 L10 10 M14 14 L16 16 M16 8 L14 10 M8 16 L10 14" class="s-yel"/></svg><span><b>Nova</b> wipes the screen</span></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="toggles">
+        <button class="toggle" data-setting="sound" aria-pressed="true">SOUND <span class="state">ON</span></button>
+        <button class="toggle" data-setting="music" aria-pressed="true">MUSIC <span class="state">ON</span></button>
+        <button class="toggle" data-setting="shake" aria-pressed="true">SHAKE <span class="state">ON</span></button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pause -->
+  <section id="pause" class="overlay hidden">
+    <div class="panel narrow">
+      <h2 class="heading">PAUSED</h2>
+      <button id="resume-btn" class="btn primary">RESUME</button>
+      <button id="quit-btn" class="btn">QUIT TO MENU</button>
+      <div class="toggles">
+        <button class="toggle" data-setting="sound" aria-pressed="true">SOUND <span class="state">ON</span></button>
+        <button class="toggle" data-setting="music" aria-pressed="true">MUSIC <span class="state">ON</span></button>
+        <button class="toggle" data-setting="shake" aria-pressed="true">SHAKE <span class="state">ON</span></button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Game over -->
+  <section id="gameover" class="overlay hidden">
+    <div class="panel narrow">
+      <h2 class="heading danger">SIGNAL LOST</h2>
+      <div id="over-rank" class="rank">Spark</div>
+      <div id="over-score" class="big-score">0</div>
+      <div id="new-best" class="new-best hidden">NEW BEST!</div>
+      <div class="stats">
+        <div><span>TIME</span><b id="stat-time">0:00</b></div>
+        <div><span>LEVEL</span><b id="stat-level">1</b></div>
+        <div><span>GRAZES</span><b id="stat-grazes">0</b></div>
+        <div><span>MAX MULT</span><b id="stat-mult">x1</b></div>
+        <div><span>SHARDS</span><b id="stat-shards">0</b></div>
+        <div><span>BEST</span><b id="over-best">0</b></div>
+      </div>
+      <button id="retry-btn" class="btn primary">RETRY</button>
+      <button id="menu-btn" class="btn">MENU</button>
+      <p class="hint">Space / Enter to retry</p>
+    </div>
+  </section>
+
+  <script src="js/sound.js"></script>
+  <script src="js/game.js"></script>
+</body>
+</html>
